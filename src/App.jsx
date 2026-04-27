@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import StarsBackground from './components/StarsBackground';
 import SettingsScreen from './components/SettingsScreen';
+import APSetupScreen from './components/APSetupScreen';
 import HandoffScreen from './components/HandoffScreen';
 import QuizScreen from './components/QuizScreen';
 import ResultsScreen from './components/ResultsScreen';
@@ -35,6 +36,7 @@ export default function App() {
   const [teams, setTeams] = useState([]);
   const [teamIdx, setTeamIdx] = useState(0);
   const [answeredIdx, setAnsweredIdx] = useState(null);
+  const [apSession, setApSession] = useState(null);
 
   function handleStart() {
     let pool = [];
@@ -111,6 +113,48 @@ export default function App() {
   function handlePlayAgain() {
     setScreen('settings');
     setWarnMsg('');
+    setApSession(null);
+  }
+
+  function handleApStart(setup) {
+    let pool = [];
+    setup.units.forEach(u => {
+      if (setup.diff === 'mixed') {
+        ['easy', 'medium', 'hard'].forEach(d => pool.push(...u[d]));
+      } else {
+        pool.push(...u[setup.diff]);
+      }
+    });
+    pool = shuffle(pool);
+    if (pool.length === 0) {
+      setWarnMsg('No questions available for this selection.');
+      return;
+    }
+    const count = Math.min(setup.count, pool.length);
+    setWarnMsg(pool.length < setup.count ? `Only ${count} questions available — starting with those.` : '');
+
+    setQuestions(pool.slice(0, count));
+    setQIdx(0);
+    setScore(0);
+    setAnsweredIdx(null);
+    setMode(setup.mode);
+    setApSession({
+      subjectName: setup.subjectName,
+      unitNames: setup.units.map(u => u.name),
+    });
+
+    if (setup.mode === 'teams') {
+      const newTeams = Array.from({ length: setup.teamCount }, (_, i) => ({
+        name: setup.teamNames[i]?.trim() || `Team ${i + 1}`,
+        score: 0,
+        color: TEAM_COLORS[i],
+      }));
+      setTeams(newTeams);
+      setTeamIdx(0);
+      setScreen('handoff');
+    } else {
+      setScreen('quiz');
+    }
   }
 
   const currentTeam = mode === 'teams' ? teams[teamIdx] : null;
@@ -131,6 +175,15 @@ export default function App() {
             selectedDiff={selectedDiff} setSelectedDiff={setSelectedDiff}
             selectedCount={selectedCount} setSelectedCount={setSelectedCount}
             onStart={handleStart}
+            onApMode={() => { setWarnMsg(''); setScreen('ap-setup'); }}
+            warnMsg={warnMsg}
+          />
+        )}
+
+        {screen === 'ap-setup' && (
+          <APSetupScreen
+            onStart={handleApStart}
+            onBack={() => { setWarnMsg(''); setScreen('settings'); }}
             warnMsg={warnMsg}
           />
         )}
@@ -166,6 +219,7 @@ export default function App() {
             score={score}
             total={questions.length}
             teams={teams}
+            apSession={apSession}
             onPlayAgain={handlePlayAgain}
           />
         )}

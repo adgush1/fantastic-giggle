@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 
 const MEDALS = ['🥇', '🥈', '🥉', '4️⃣'];
 
-export default function ResultsScreen({ mode, score, total, teams, onPlayAgain }) {
+export default function ResultsScreen({ mode, score, total, teams, apSession, onPlayAgain }) {
   const pct = Math.round((score / total) * 100);
   const perfMsg =
     pct === 100 ? '🌟 Perfect score! Legendary!'
@@ -38,6 +38,11 @@ export default function ResultsScreen({ mode, score, total, teams, onPlayAgain }
         >
           Results
         </Typography>
+        {apSession && (
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.75, px: 1 }}>
+            {apSession.subjectName} — {apSession.unitNames.join(', ')}
+          </Typography>
+        )}
       </Box>
 
       {mode === 'single' ? (

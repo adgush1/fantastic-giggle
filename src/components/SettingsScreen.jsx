@@ -67,6 +67,7 @@ export default function SettingsScreen({
   selectedDiff, setSelectedDiff,
   selectedCount, setSelectedCount,
   onStart,
+  onApMode,
   warnMsg,
 }) {
   const allSelected = Object.keys(BANK).every(t => selectedTopics.includes(t));
@@ -110,19 +111,23 @@ export default function SettingsScreen({
         <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'text.secondary', mb: 1.5 }}>
           Game Mode
         </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-          {[{ val: 'single', label: '👤 Single Player' }, { val: 'teams', label: '👥 Teams' }].map(({ val, label }) => (
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, '@media (max-width:550px)': { gridTemplateColumns: '1fr' } }}>
+          {[
+            { val: 'single', label: '👤 Single', onClick: () => setMode('single'), selected: mode === 'single' },
+            { val: 'teams', label: '👥 Teams', onClick: () => setMode('teams'), selected: mode === 'teams' },
+            { val: 'ap', label: '🎓 AP Study', onClick: onApMode, selected: false },
+          ].map(({ val, label, onClick, selected }) => (
             <Box
               key={val}
               component="button"
-              onClick={() => setMode(val)}
+              onClick={onClick}
               sx={{
                 p: '0.8rem',
                 borderRadius: '11px',
                 border: '2px solid',
-                borderColor: mode === val ? 'primary.main' : 'rgba(255,255,255,0.09)',
-                background: mode === val ? 'rgba(139,92,246,0.13)' : 'transparent',
-                color: mode === val ? '#f0f0ff' : '#6b7280',
+                borderColor: selected ? 'primary.main' : 'rgba(255,255,255,0.09)',
+                background: selected ? 'rgba(139,92,246,0.13)' : 'transparent',
+                color: selected ? '#f0f0ff' : '#6b7280',
                 fontFamily: "'Space Grotesk', system-ui, sans-serif",
                 fontSize: '0.95rem',
                 fontWeight: 600,
@@ -133,7 +138,7 @@ export default function SettingsScreen({
                 gap: '0.5rem',
                 transition: 'all 0.2s',
                 outline: 'none',
-                boxShadow: mode === val ? '0 0 18px rgba(139,92,246,0.3)' : 'none',
+                boxShadow: selected ? '0 0 18px rgba(139,92,246,0.3)' : 'none',
                 '&:hover': { borderColor: 'primary.main', color: '#f0f0ff' },
               }}
             >
